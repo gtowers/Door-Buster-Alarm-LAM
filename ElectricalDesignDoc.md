@@ -1,1 +1,4 @@
+The first sketch, done in autocad electric - only used the arduino, photoelectric sensor and some relays.  
+Rev 2_1 is the system broken down and is simply the voltage regulator to change voltage from 12 Volts, used for the arduino down to 3.2 Volts so that I can add the XBee as a stand alone.  My idea is to have it in sleep mode.  It's function is to be in sleep mode it will be used to track the remaining power on the battery.
+The drawings are also converted to PDF for general review.
 
