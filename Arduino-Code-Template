@@ -8,26 +8,35 @@
  * and beacon.  There will be a 20 second delay after power up,
  * at the end of this time, the siren will turn off but the blinking light 
  * will stay on until the door alarm has been cleared.
+ 
 
 */
 
 
 
-int Alarm = 11; //This will be the alarm output
-int Siren = 12; // This will be the siren
-int analogValue = 0; //This will be the battery voltage check
+
+int Siren = 13; // This will be the siren output pin
+int Bat_Check = 3; //Identifies pin 3 as the Voltage input for the battery
+int Bat_Val = 0; //This will be the battery voltage check variable
+int Bat_Alarm=0;  //If the siren has been shut off for time but the door is still open, need to check for battery alarm and reset
 
 
 
 void setup() {
-  pinMode(Alarm,OUTPUT);
   pinMode(Siren,OUTPUT);
-  
-
-}
+ }
 
 
 void loop() {
+ delay(20000); //delay for 20 seconds then set siren to off
+  digitalWrite(Siren,HIGH);
+ Bat_Val = analogRead(Bat_Check);
+ if(Bat_Val<1100)
+   if(Bat_Alarm ==0){  
+ {digitalWrite(Siren,LOW);
+  Bat_Alarm = 1;}
+   }
+ 
 }
 
 
