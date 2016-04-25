@@ -1,0 +1,87 @@
+/*
+ * *********Arduino to be located in Buster Box********
+ * This Arduino wil only be turned on when the sensor 
+ * detects that the door has been opened.  The power to the
+ * sensor will be on continuosly and a relay will close that
+ * will be responsibile for energizing the arduino.
+ * At the same time, this relay will energize the siren
+ * and beacon.  There will be a 20 second delay after power up,
+ * at the end of this time, the siren will turn off but the blinking light 
+ * will stay on until the door alarm has been cleared.
+ 
+
+*/
+
+
+
+
+const int SirenPin = 13; // This will be the siren output pin
+const int Beacon = 12; //This will turn off the beacon while waiting for output to xbee for notification of alarm
+const int PowerLatch = 11; //This will keep the power on when the sensor returns to normal for xbee alarm notification
+int SensStatus = 10; //This gives the photodetector sensor status
+int Bat_Check = 3; //Identifies pin 3 as the Voltage input for the battery
+float Bat_Val = 0; //This will be the battery voltage check variable
+int Bat_Alarm=0;  //If the siren has been shut off for time but the door is still open, need to check for battery alarm and reset
+int StartCounting=0; //use this to initialize the time
+long startTime; //The time when the arduino is first turned on to show as an alarm
+long duration; //this will store ow long the arduino has been on
+int SrnPin; //status of SirenPin for debug
+
+
+
+
+void setup() {
+  pinMode(SirenPin,OUTPUT); //This is the audible alarm horn output
+  pinMode(Beacon,OUTPUT); //This is the alarm light output
+  pinMode (PowerLatch,OUTPUT); //This keeps the power pulled in while the xbee sends data to remote device
+  pinMode (SensStatus,INPUT) ; //This lets the local know when the alarm clears so that power can be shut off after xbee alarm is sent out
+  Serial.begin(9600);
+ }
+
+
+void loop() {
+  if (StartCounting==0) {
+    if (SensStatus<20){   //This needs to be changed to HIGH after debug
+      startTime = millis();
+      StartCounting = 1;
+      
+    }
+  }
+  
+  duration = millis() - startTime;
+  digitalWrite(PowerLatch, HIGH);  //This latches the power on until alarm is cleared and time has been allowed for alarm to be written to remote device
+  if (SensStatus<20)//This allows time for Alarm Siren to continue after 20 seconds alarm siren clears         
+       {if (duration>30000)
+       {
+        digitalWrite(SirenPin,HIGH);
+        SrnPin = 1;
+        }}
+  if (SensStatus > 40)  //Clear Siren and Beacon immediately - This will need to change when the sens status actually exists
+       {digitalWrite(SirenPin, HIGH);
+        digitalWrite(Beacon, HIGH);
+        SrnPin = 0 ; 
+       }
+ 
+ Bat_Val = analogRead(Bat_Check)/float(202);
+ if(Bat_Val<float(4.6) )
+   if(Bat_Alarm ==0){  
+ {digitalWrite(SirenPin,LOW);
+  Bat_Alarm = 1;}
+  
+   }
+ delay (1000);
+ Serial.print("Duration is");
+ Serial.println(duration);
+ Serial.println();
+ Serial.println(StartCounting);
+ Serial.print("SensStatus is  ");
+ Serial.println(SensStatus);
+ Serial.println();
+ Serial.println("Siren is  ");
+ Serial.println(SrnPin);
+ Serial.println("Analog is  ");
+ Serial.println(Bat_Val);
+ Serial.println("Battery Alarm " );
+ Serial.println(Bat_Alarm);
+   
+}
