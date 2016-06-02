@@ -1,0 +1,126 @@
+/*
+ * *********Arduino to be located in Buster Box********
+ * This Arduino wil only be turned on when the sensor 
+ * detects that the door has been opened.  The power to the
+ * sensor will be on continuosly and a relay will close that
+ * will be responsibile for energizing the arduino.
+ * At the same time, this relay will energize the siren
+ * and beacon.  There will be a 20 second delay after power up,
+ * at the end of this time, the siren will turn off but the blinking light 
+ * will stay on until the door alarm has been cleared.
+ 
+
+*/
+
+
+
+
+const int SirenPin = 13; // This will be the siren output pin
+const int Beacon = 12; //This will turn off the beacon while waiting for output to xbee for notification of alarm
+const int PowerLatch = 11; //This will keep the power on when the sensor returns to normal for xbee alarm notification
+const int Bat_Check = 3; //Identifies pin 3 as the Voltage input for the battery
+const int Door_Alarm = 9;  //Identifies pin 9 as the Door Open Alarm
+float Bat_Val = 0; //This will be the battery voltage check variable
+int Bat_Alarm=0;  //If the siren has been shut off for time but the door is still open, need to check for battery alarm and reset
+int StartCounting=0; //use this to initialize the time
+long startTime; //The time when the arduino is first turned on to show as an alarm
+long duration; //this will store ow long the arduino has been on
+int SrnPin; //status of SirenPin for debug
+int Bat_State; //Battery Status
+int Door_State; //Door Status
+int PowerLatchState;
+
+
+
+
+void setup() {
+  pinMode(SirenPin,OUTPUT); //This is the audible alarm horn output #13
+  pinMode(Beacon,OUTPUT); //This is the alarm light output Output #12 
+  pinMode (PowerLatch,OUTPUT); //This keeps the power pulled in while the xbee sends data to remote device Output #11
+  pinMode(Bat_Check,INPUT); //This is the digital input to notify that the Battery low
+  pinMode(Door_Alarm, INPUT_PULLUP); //This is the digital input to notify that the Door is in alarm
+  Serial.begin(9600);
+ }
+
+
+void loop() {
+  Bat_State = digitalRead(Bat_Check);
+  Door_State = digitalRead(Door_Alarm);
+  PowerLatchState = digitalRead(PowerLatch);
+  duration = millis() - startTime;
+
+
+  //Code Below is to start the counter so that the Siren can be turned off after 20 seconds, the beacon and siren will be turned off as soon as all alarms 
+  //cleared, the unit will unlatch 60 seconds after all alarms have cleared.  This should allow enough time for the wireless.
+  
+  if ((StartCounting==0) or (duration>60000)) {
+      startTime = millis();
+      StartCounting = 1;
+      delay(500);
+      digitalWrite(SirenPin,LOW); //when system first comes on, Siren Relay is low, so siren & beacon are set
+      digitalWrite(Beacon,LOW);//This turns off the Beacon as soon as the alarm clears
+      digitalWrite(PowerLatch,HIGH);//This latches the alarm so that there is time for the wireless to act
+  }
+
+
+    
+
+ //Code below will check to see if alarm has been on for 30 seconds.  If it has been on for 30 seconds, then the siren needs to be turned off
+    
+       if ((duration>30000)or ((Door_Alarm == 1) &&(Bat_Check<500)&& (duration>30000)))
+       {
+        digitalWrite(SirenPin,HIGH);
+        }
+
+// If 10 seconds have gone by, and there is no alarm both the beacon can be cleared and the powerlatch can be cleared
+
+      if ((duration>10000) && (Door_Alarm == 1) &&(Bat_Check<500))
+      {
+        digitalWrite(Beacon,HIGH);
+        digitalWrite(PowerLatch,HIGH);
+        }
+
+
+
+  delay (500);
+ Serial.println("Duration is");
+  delay (500);
+ Serial.println(duration);
+ delay (500);
+ Serial.println();
+ delay (500);
+ Serial.println(StartCounting);
+ delay (500);
+ Serial.println();
+ delay (500);
+Serial.println("PowerLatch");
+delay (500);
+Serial.println(PowerLatchState);
+delay (500);
+Serial.println();
+ delay (500);
+ Serial.println("Door Alarm  ");
+  delay (500);
+Serial.println(Door_State);  
+delay (500);
+Serial.println("Battery State");
+delay (500);
+Serial.println(Bat_State);
+delay (500);
+Serial.println();
+delay (500);
+Serial.println("millis");
+delay(500);
+Serial.println(millis());
+delay(500);
+   
+}
+
+
+
+
+
+ 
+
+
+
